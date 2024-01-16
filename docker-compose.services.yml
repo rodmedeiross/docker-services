@@ -1,0 +1,79 @@
+version: '3.6'
+name: services
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    hostname: localsql
+    ports:
+      - 1433:1433
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=yourStrong(!)Password
+    volumes:
+      - ./dockerdata/sqlserver:/var/opt/mssql/data
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    hostname: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: developer
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    hostname: mongo-express
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: developer
+      ME_CONFIG_MONGODB_URL: mongodb://root:developer@mongo:27017/
+
+  redis:
+    image: redis
+    container_name: redis
+    hostname: redis
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - ./dockerdata/redis:/data
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    hostname: redis-commander
+    ports:
+      - 8082:8082
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+
+  storage-emulator:
+   image: mcr.microsoft.com/azure-storage/azurite
+   container_name: storage-emulator
+   hostname: azure-emulator
+   ports:
+     - 10000:10000
+  
+  dev-container:
+    build:
+      context: .
+      dockerfile: Dockerfile.DevEnvironment
+      args:
+        - USER=${USER}
+        - PASSWORD=${PASSWORD}
+    env_file:
+      - .env
+    container_name: sandbox
+    hostname: sandbox
+    ports:
+      - "2222:22"
+    volumes:
+      - ./dockerdata/sandbox/Projects:/home/${USER}/Projects
+      - ./dockerdata/sandbox/.ssh:/home/${USER}/.ssh #bind ssh folder to remote servers

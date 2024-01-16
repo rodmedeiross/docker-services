@@ -1,0 +1,33 @@
+FROM ubuntu:20.04
+
+# Set Environments
+ARG USER
+ARG PASSWORD
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary tools and dependencies
+RUN apt-get update && \
+    apt-get install -y sudo \
+    openssh-server \
+    git \
+    curl \
+    build-essential \
+    default-jdk \
+    libssl-dev \
+    vim \
+#     # Add other tools and dependencies here \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up SSH server
+RUN mkdir /var/run/sshd
+
+# Add a user for development (change 'user' and 'password' as needed)
+RUN useradd -m -d /home/${USER} -s /bin/bash ${USER} && \
+    echo "${USER}:${PASSWORD}" | chpasswd && \
+    usermod -aG sudo ${USER}
+
+# Expose SSH port
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]
+
