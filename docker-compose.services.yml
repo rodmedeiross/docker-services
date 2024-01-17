@@ -7,22 +7,24 @@ services:
     hostname: localsql
     ports:
       - 1433:1433
-    user: root
+    user: ${SA}
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=yourStrong(!)Password
+      - SA_PASSWORD=${SA_PASSWORD}
     volumes:
       - ./dockerdata/sqlserver:/var/opt/mssql/data
 
   mongo:
     image: mongo
     container_name: mongo
-    hostname: mongo
+    hostname: localmongo
     ports:
       - 27017:27017
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: developer
+      MONGO_INITDB_ROOT_USERNAME: ${SA}
+      MONGO_INITDB_ROOT_PASSWORD: ${SA_PASSWORD}
+    volumes:
+      - ./dockerdata/mongo:/data/db
 
   mongo-express:
     image: mongo-express
@@ -31,9 +33,9 @@ services:
     ports:
       - 8081:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: developer
-      ME_CONFIG_MONGODB_URL: mongodb://root:developer@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${SA}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${SA_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${SA}:${SA_PASSWORD}@mongo:27017/
 
   redis:
     image: redis
@@ -76,4 +78,5 @@ services:
       - "2222:22"
     volumes:
       - ./dockerdata/sandbox/Projects:/home/${USER}/Projects
-      - ./dockerdata/sandbox/.ssh:/home/${USER}/.ssh #bind ssh folder to remote servers
+      - ./dockerdata/sandbox/.ssh:/home/${USER}/.ssh
+      - ./dockerdata/sandbox/git:/home/${USER}/
