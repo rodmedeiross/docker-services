@@ -13,6 +13,7 @@ services:
       - SA_PASSWORD=${SA_PASSWORD}
     volumes:
       - ./dockerdata/sqlserver:/var/opt/mssql/data
+    condition: false
 
   mongo:
     image: mongo
@@ -57,12 +58,26 @@ services:
       - REDIS_HOSTS=local:redis:6379
 
   storage-emulator:
-   image: mcr.microsoft.com/azure-storage/azurite
-   container_name: storage-emulator
-   hostname: azure-emulator
-   ports:
-     - 10000:10000
-  
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: storage-emulator
+    hostname: azure-emulator
+    ports:
+      - 10000:10000
+
+  azure-cli:
+    image: mcr.microsoft.com/azure-cli
+    container_name: azure-cli
+    hostname: azure-cli
+    volumes:
+      - ${HOME}/.ssh:/root/.ssh
+
+  aws-cli:
+    image: amazon/aws-cli
+    container_name: aws-cli
+    hostname: aws-cli
+    volumes:
+      - ${HOME}/.aws:/root/.aws
+
   dev-container:
     build:
       context: .
